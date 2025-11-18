@@ -7,9 +7,11 @@ router.get('/',function(req, res, next){
     res.render('index.ejs')
 });
 
-router.get('/about',function(req, res, next){
-    res.render('about.ejs')
+router.get('/about', (req, res) => {
+  const shopData = { shopName: "My Bookstore" };
+  res.render('about', { shopData });
 });
+
 
 router.get('/books/addbook',function(req, res, next){
     res.render('addbook.ejs')
