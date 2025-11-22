@@ -4,145 +4,98 @@ const router = express.Router();
 const bcrypt = require("bcrypt");
 const saltRounds = 10;
 
+// DB connection (your project uses global db, so we use it)
+const db = global.db;
+
 // Show registration form
-router.get("/register", (req, res, next) => {
-  res.render("register.ejs");
+router.get("/register", (req, res) => {
+    res.render("register.ejs");
 });
 
-// Handle registration form
+// Handle registration
 router.post("/registered", (req, res, next) => {
-  const { username, first, last, email, password } = req.body;
+    const { username, first, last, email, password } = req.body;
 
-  // Hash the password
-  bcrypt.hash(password, saltRounds, (err, hashedPassword) => {
-    if (err) {
-      return next(err);
-    }
+    // Hash password
+    bcrypt.hash(password, saltRounds, (err, hashedPassword) => {
+        if (err) return next(err);
 
-    // Insert new user into the database
-    const sqlquery = `
-      INSERT INTO users (username, first_name, last_name, email, hashedPassword)
-      VALUES (?, ?, ?, ?, ?)
-    `;
-    const newrecord = [username, first, last, email, hashedPassword];
+        const sqlquery = `
+            INSERT INTO users (username, first_name, last_name, email, hashedPassword)
+            VALUES (?, ?, ?, ?, ?)
+        `;
 
-    db.query(sqlquery, newrecord, (err, result) => {
-      if (err) {
-        return next(err);
-      }
-      res.send(
-        `Hello ${first} ${last}, you are now registered! We will send an email to you at ${email}.`
-      );
+        const params = [username, first, last, email, hashedPassword];
+
+        db.query(sqlquery, params, (err, result) => {
+            if (err) return next(err);
+
+            res.send(`Registration successful. Welcome ${first} ${last}!`);
+        });
     });
-  });
-});
-
-// List all users
-router.get("/list", (req, res, next) => {
-  const sqlquery =
-    "SELECT id, username, first_name, last_name, email FROM users";
-
-  db.query(sqlquery, (err, result) => {
-    if (err) {
-      return next(err);
-    }
-    res.render("listusers.ejs", { availableUsers: result });
-  });
 });
 
 // Show login form
-router.get("/login", (req, res, next) => {
-  res.render("login.ejs");
+router.get("/login", (req, res) => {
+    res.render("login.ejs");
 });
 
 // Handle login
 router.post("/loggedin", (req, res, next) => {
-  const username = req.body.username;
-  const plainPassword = req.body.password;
+    const { username, password } = req.body;
 
-  const sqlquery = "SELECT hashedPassword FROM users WHERE username = ?";
+    const sqlquery = "SELECT hashedPassword FROM users WHERE username = ?";
 
-  db.query(sqlquery, [username], (err, result) => {
-    if (err) {
-      return next(err);
-    }
+    db.query(sqlquery, [username], (err, results) => {
+        if (err) return next(err);
 
-    // No such user
-    if (result.length === 0) {
-      const auditQuery =
-        "INSERT INTO login_audit (username, status, message) VALUES (?, ?, ?)";
-      db.query(
-        auditQuery,
-        [username, "failed", "Username not found"],
-        auditErr => {
-          if (auditErr) console.error("Audit log error:", auditErr);
+        // No such user
+        if (results.length === 0) {
+            logAudit(username, "failed", "Username not found");
+            return res.send("Login failed: Username not found.");
         }
-      );
-      return res.render("loggedin.ejs", {
-        loginSuccess: false,
-        username: username,
-        errorMessage: "Username not found."
-      });
-    }
 
-    const hashedPassword = result[0].hashedPassword;
+        const hashedPassword = results[0].hashedPassword;
 
-    // Compare supplied password with stored hash
-    bcrypt.compare(plainPassword, hashedPassword, (err, passwordsMatch) => {
-      if (err) {
-        return next(err);
-      }
+        // Check password
+        bcrypt.compare(password, hashedPassword, (err, passwordMatches) => {
+            if (err) return next(err);
 
-      if (passwordsMatch) {
-        // Log success
-        const auditQuery =
-          "INSERT INTO login_audit (username, status, message) VALUES (?, ?, ?)";
-        db.query(
-          auditQuery,
-          [username, "success", "Login successful"],
-          auditErr => {
-            if (auditErr) console.error("Audit log error:", auditErr);
-          }
-        );
+            if (!passwordMatches) {
+                logAudit(username, "failed", "Incorrect password");
+                return res.send("Login failed: Incorrect password.");
+            }
 
-        return res.render("loggedin.ejs", {
-          loginSuccess: true,
-          username: username,
-          errorMessage: ""
+            // Success
+            logAudit(username, "success", "Login successful");
+            res.send(`Welcome back, ${username}! Login successful.`);
         });
-      } else {
-        // Log incorrect password
-        const auditQuery =
-          "INSERT INTO login_audit (username, status, message) VALUES (?, ?, ?)";
-        db.query(
-          auditQuery,
-          [username, "failed", "Incorrect password"],
-          auditErr => {
-            if (auditErr) console.error("Audit log error:", auditErr);
-          }
-        );
-
-        return res.render("loggedin.ejs", {
-          loginSuccess: false,
-          username: username,
-          errorMessage: "Incorrect password."
-        });
-      }
     });
-  });
 });
 
-// Login audit history
-router.get("/audit", (req, res, next) => {
-  const sqlquery =
-    "SELECT id, username, login_time, status, message FROM login_audit ORDER BY login_time DESC";
+// Audit log helper
+function logAudit(username, status, message) {
+    const sql = `
+        INSERT INTO login_audit (username, status, message)
+        VALUES (?, ?, ?)
+    `;
+    db.query(sql, [username, status, message], err => {
+        if (err) console.error("Audit log error:", err);
+    });
+}
 
-  db.query(sqlquery, (err, result) => {
-    if (err) {
-      return next(err);
-    }
-    res.render("audit.ejs", { auditRecords: result });
-  });
+// Show audit log
+router.get("/audit", (req, res, next) => {
+    const sqlquery = `
+        SELECT id, username, login_time, status, message
+        FROM login_audit
+        ORDER BY login_time DESC
+    `;
+
+    db.query(sqlquery, (err, result) => {
+        if (err) return next(err);
+        res.render("audit.ejs", { auditRecords: result });
+    });
 });
 
 module.exports = router;
