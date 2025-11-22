@@ -78,7 +78,11 @@ router.post("/loggedin", (req, res, next) => {
           if (auditErr) console.error("Audit log error:", auditErr);
         }
       );
-      return res.send("Login failed: Username not found.");
+      return res.render("loggedin.ejs", {
+        loginSuccess: false,
+        username: username,
+        errorMessage: "Username not found."
+      });
     }
 
     const hashedPassword = result[0].hashedPassword;
@@ -101,9 +105,11 @@ router.post("/loggedin", (req, res, next) => {
           }
         );
 
-        return res.send(
-          `Login successful! Welcome back, ${username}!`
-        );
+        return res.render("loggedin.ejs", {
+          loginSuccess: true,
+          username: username,
+          errorMessage: ""
+        });
       } else {
         // Log incorrect password
         const auditQuery =
@@ -116,7 +122,11 @@ router.post("/loggedin", (req, res, next) => {
           }
         );
 
-        return res.send("Login failed: Incorrect password.");
+        return res.render("loggedin.ejs", {
+          loginSuccess: false,
+          username: username,
+          errorMessage: "Incorrect password."
+        });
       }
     });
   });

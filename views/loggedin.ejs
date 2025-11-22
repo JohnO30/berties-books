@@ -1,0 +1,26 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Login Status - <%=shopData.shopName%></title>
+    <link rel="stylesheet" type="text/css" href="/main.css" />
+  </head>
+  <body>
+    <!-- Display shop name as main heading -->
+    <h1><%=shopData.shopName%></h1>
+    
+    <!-- Check if login was successful or failed -->
+    <% if (loginSuccess) { %>
+      <!-- Display success message when login is successful -->
+      <h2>Login Successful!</h2>
+      <p>Welcome back, <strong><%= username %></strong>!</p>
+      <p>You have successfully logged in to your account.</p>
+    <% } else { %>
+      <!-- Display error message when login fails -->
+      <h2>Login Failed</h2>
+      <p><%= errorMessage %></p>
+    <% } %>
+    
+    <!-- Navigation links -->
+    <p><a href="/users/login">Back to Login</a> | <a href="/">Home</a></p>
+  </body>
+</html>
