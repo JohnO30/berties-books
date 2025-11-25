@@ -11,25 +11,22 @@ CREATE TABLE IF NOT EXISTS books (
     price  DECIMAL(5, 2),
     PRIMARY KEY(id));
 
+# Users table
 CREATE TABLE IF NOT EXISTS users (
-    id            INT AUTO_INCREMENT,
-    username      VARCHAR(50) NOT NULL UNIQUE,
-    first_name    VARCHAR(50) NOT NULL,
-    last_name     VARCHAR(50) NOT NULL,
-    email         VARCHAR(100) NOT NULL,
+    id INT AUTO_INCREMENT,
+    username VARCHAR(50) NOT NULL UNIQUE,
+    first VARCHAR(50) NOT NULL,
+    last VARCHAR(50) NOT NULL,
+    email VARCHAR(100) NOT NULL,
     hashedPassword VARCHAR(255) NOT NULL,
-    PRIMARY KEY(id));
+    PRIMARY KEY(id)
+);
 
+# Login audit table
 CREATE TABLE IF NOT EXISTS login_audit (
-    id            INT AUTO_INCREMENT,
-    username      VARCHAR(50) NOT NULL,
-    login_time    DATETIME DEFAULT CURRENT_TIMESTAMP,
-    status        VARCHAR(20) NOT NULL,
-    message       VARCHAR(255),
-    PRIMARY KEY(id));
-
-DROP USER IF EXISTS ' berties_books_app'@'localhost';
-
-CREATE USER 'berties_books_app'@'localhost' IDENTIFIED BY 'qwertyuiop';
-GRANT ALL PRIVILEGES ON berties_books.* TO 'berties_books_app'@'localhost';
-FLUSH PRIVILEGES;
+    id INT AUTO_INCREMENT,
+    username VARCHAR(50),
+    success BOOLEAN NOT NULL,
+    timestamp DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY(id)
+);

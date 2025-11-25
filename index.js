@@ -1,55 +1,49 @@
 // Import express and ejs
-const express = require("express");
-const ejs = require("ejs");
-const path = require("path");
-const mysql = require("mysql2");
-
-// Load environment variables from .env file
-require("dotenv").config({ silent: true });
+var express = require ('express')
+var ejs = require('ejs')
+const path = require('path')
+var mysql = require('mysql2');
+require('dotenv').config();
 
 // Create the express application object
-const app = express();
-const port = process.env.PORT || 8000;
-
-// Tell Express that we want to use EJS as the templating engine
-app.set("view engine", "ejs");
-
-// Set views directory
-app.set("views", path.join(__dirname, "views"));
-
-// Body parser (needed for req.body)
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
-
-// Public folder for CSS, images, client-side JS
-app.use(express.static(path.join(__dirname, "public")));
-
-// Application data for templates
-app.locals.shopData = {
-    shopName: process.env.SHOP_NAME || "Bertie's Books"
-};
-
+const app = express()
+const port = 8000
 
 // Define the database connection pool
-// Define the database connection pool using environment variables
 const db = mysql.createPool({
-    host: process.env.DB_HOST || "localhost",
-    user: process.env.DB_USER || "berties_books_app",
-    password: process.env.DB_PASSWORD || "qwertyuiop",
-    database: process.env.DB_NAME || "berties_books",
-    waitForConnections: true,
-    connectionLimit: 10,
-    queueLimit: 0,
+  host: 'localhost',
+  user: process.env.BB_USER,
+  password: process.env.BB_PASSWORD,
+  database: process.env.BB_DATABASE,
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0,
 });
-
-
-// Expose DB globally
+  
 global.db = db;
+// Tell Express that we want to use EJS as the templating engine
+app.set('view engine', 'ejs')
+
+// Set up the body parser 
+app.use(express.urlencoded({ extended: true }))
+
+// Set up public folder (for css and static js)
+app.use(express.static(path.join(__dirname, 'public')))
+
+// Define our application-specific data
+app.locals.shopData = {shopName: "Bertie's Books"}
 
 // Load the route handlers
-app.use("/", require("./routes/main"));
-app.use("/users", require("./routes/users"));
-app.use("/books", require("./routes/books"));
+const mainRoutes = require("./routes/main")
+app.use('/', mainRoutes)
+
+// Load the route handlers for /users
+const usersRoutes = require('./routes/users')
+app.use('/users', usersRoutes)
+
+// Load the route handlers for /books
+const booksRoutes = require('./routes/books')
+app.use('/books', booksRoutes)
 
 // Start the web app listening
-app.listen(port, () => console.log(`Example app listening on port ${port}!`));
+app.listen(port, () => console.log(`Example app listening on port ${port}!`))

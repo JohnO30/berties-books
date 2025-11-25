@@ -73,6 +73,19 @@ router.post("/loggedin", (req, res, next) => {
     });
 });
 
+
+// List all books
+router.get("/list", (req, res, next) => {
+  const sqlquery = "SELECT * FROM books";
+
+  db.query(sqlquery, (err, result) => {
+    if (err) {
+      return next(err);
+    }
+    res.render("list.ejs", { availableBooks: result });
+  });
+});
+
 // Audit log helper
 function logAudit(username, status, message) {
     const sql = `
