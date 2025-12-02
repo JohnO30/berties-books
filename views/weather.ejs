@@ -1,0 +1,163 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Weather - <%= shopData.shopName %></title>
+    <link rel="stylesheet" type="text/css" href="/main.css" />
+    <style>
+      body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        padding: 20px;
+      }
+      
+      h1 {
+        color: white;
+        text-align: center;
+        font-size: 2.5em;
+        margin-bottom: 30px;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+      }
+      
+      form {
+        background: white;
+        padding: 30px;
+        border-radius: 15px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        max-width: 500px;
+        margin: 0 auto 30px;
+      }
+      
+      label {
+        font-size: 1.2em;
+        color: #333;
+        font-weight: 600;
+        display: block;
+        margin-bottom: 10px;
+      }
+      
+      input[type="text"] {
+        width: 100%;
+        padding: 12px;
+        font-size: 1.1em;
+        border: 2px solid #667eea;
+        border-radius: 8px;
+        box-sizing: border-box;
+        margin-top: 8px;
+      }
+      
+      input[type="text"]:focus {
+        outline: none;
+        border-color: #764ba2;
+        box-shadow: 0 0 8px rgba(102, 126, 234, 0.4);
+      }
+      
+      button {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 12px 30px;
+        font-size: 1.1em;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        margin-top: 15px;
+        width: 100%;
+        font-weight: 600;
+        transition: transform 0.2s;
+      }
+      
+      button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+      }
+      
+      .weather-info {
+        background: white;
+        padding: 30px;
+        border-radius: 15px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        max-width: 600px;
+        margin: 0 auto;
+      }
+      
+      .weather-info h2 {
+        color: #667eea;
+        font-size: 2em;
+        margin-bottom: 20px;
+        text-align: center;
+        border-bottom: 3px solid #764ba2;
+        padding-bottom: 15px;
+      }
+      
+      .weather-info p {
+        font-size: 1.1em;
+        color: #555;
+        padding: 10px;
+        margin: 8px 0;
+        background: #f8f9fa;
+        border-radius: 8px;
+        border-left: 4px solid #667eea;
+      }
+      
+      .weather-info strong {
+        color: #764ba2;
+        font-weight: 600;
+      }
+      
+      a {
+        display: block;
+        text-align: center;
+        color: white;
+        font-size: 1.2em;
+        text-decoration: none;
+        margin-top: 30px;
+        padding: 10px;
+        background: rgba(255,255,255,0.2);
+        border-radius: 8px;
+        max-width: 200px;
+        margin: 30px auto 0;
+        transition: background 0.3s;
+      }
+      
+      a:hover {
+        background: rgba(255,255,255,0.3);
+      }
+    </style>
+  </head>
+  <body>
+    <h1>🌤️ Weather Information</h1>
+    
+    <form method="GET" action="/weather">
+      <label>Enter city name: 
+        <input type="text" name="city" value="<%= city %>" required>
+      </label>
+      <button type="submit">Get Weather</button>
+    </form>
+
+    <% if (weather) { %>
+      <div class="weather-info">
+        <h2>Weather in <%= weather.name %>, <%= weather.sys.country %></h2>
+        <p><strong>Temperature:</strong> <%= weather.main.temp %>°C</p>
+        <p><strong>Feels like:</strong> <%= weather.main.feels_like %>°C</p>
+        <p><strong>Min/Max:</strong> <%= weather.main.temp_min %>°C / <%= weather.main.temp_max %>°C</p>
+        <p><strong>Humidity:</strong> <%= weather.main.humidity %>%</p>
+        <p><strong>Pressure:</strong> <%= weather.main.pressure %> hPa</p>
+        <p><strong>Description:</strong> <%= weather.weather[0].description %></p>
+        <p><strong>Wind Speed:</strong> <%= weather.wind.speed %> m/s</p>
+        <p><strong>Wind Direction:</strong> <%= weather.wind.deg %>°</p>
+        <p><strong>Cloudiness:</strong> <%= weather.clouds.all %>%</p>
+        <% if (weather.visibility) { %>
+          <p><strong>Visibility:</strong> <%= (weather.visibility / 1000).toFixed(1) %> km</p>
+        <% } %>
+      </div>
+    <% } else if (typeof error !== 'undefined') { %>
+      <div class="weather-info" style="text-align: center; color: #d63031;">
+        <h2>Error</h2>
+        <p style="font-size: 1.3em;"><%= error %></p>
+        <p>Please check the city name and try again.</p>
+      </div>
+    <% } %>
+
+    <p><a href="/">Back to Home</a></p>
+  </body>
+</html>
