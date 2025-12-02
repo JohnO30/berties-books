@@ -11,7 +11,7 @@ const redirectLogin = (req, res, next) => {
   }
 };
 
-// Show search form
+// Show search form (PUBLIC - no login required)
 router.get('/search', function (req, res, next) {
   res.render("search.ejs");
 });

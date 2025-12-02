@@ -100,7 +100,7 @@ router.get("/list", redirectLogin, function (req, res, next) {
       return res.status(500).send("Error fetching users.");
     }
 
-    res.render("users_list.ejs", { users: rows });
+    res.render("listusers.ejs", { users: rows });
   });
 });
 
@@ -159,9 +159,9 @@ router.post("/loggedin", function (req, res, next) {
 });
 
 
-// Get users/logout
+// Get users/logout (PUBLIC - no redirectLogin needed)
 
-router.get("/logout", redirectLogin, function (req, res, next) {
+router.get("/logout", function (req, res, next) {
   req.session.destroy(function (err) {
     if (err) {
       return next(err);
