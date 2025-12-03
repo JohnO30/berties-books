@@ -11,7 +11,7 @@ const saltRounds = 10;
 
 const redirectLogin = (req, res, next) => {
   if (!req.session.userId) {
-    res.redirect('/users/login');
+    res.redirect('/login');
   } else {
     next();
   }
@@ -103,7 +103,6 @@ router.get("/list", redirectLogin, function (req, res, next) {
     res.render("listusers.ejs", { users: rows });
   });
 });
-
 
 // 
 router.post("/loggedin", function (req, res, next) {
