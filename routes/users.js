@@ -108,14 +108,7 @@ router.get("/list", redirectLogin, function (req, res, next) {
 // Get users/login
 
 router.get("/login", function (req, res, next) {
-  res.send(`
-    <h1>Login</h1>
-    <form method="post" action="/users/loggedin">
-      <label>Username: <input type="text" name="username" required></label><br>
-      <label>Password: <input type="password" name="password" required></label><br>
-      <button type="submit">Login</button>
-    </form>
-  `);
+  res.render("login.ejs");
 });
 
 // 
