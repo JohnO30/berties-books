@@ -108,7 +108,7 @@ router.get("/list", redirectLogin, function (req, res, next) {
 // Get users/login
 router.get("/login", function (req, res, next) {
   if (req.session && req.session.userId) {
-    return res.redirect("/users/list"); 
+    return res.redirect("/users/login"); 
   }
   res.render("login.ejs");
 });
